@@ -1,23 +1,15 @@
-
-import './App.css'
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import HomePage from './components/Homepage';
 
 function App() {
-  
-
   return (
-    <>
-     
-      <h1>Vite + React</h1>
-      <div className="text-center p-8">
-        <p  className="text-4xl font-bold text-blue-500">
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p >
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="bg-gray-50 min-h-screen">
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+      </Routes>
+    </div>
+  );
 }
 
-export default App
+export default App;
