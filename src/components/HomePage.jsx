@@ -3,20 +3,41 @@ import { fetchTopHeadlines, searchNews } from '../services/newsApiService';
 import CategoryFilter from '../components/CategoryFilter';
 import SearchBar from '../components/SearchBar';
 import Pagination from '../components/Pagination';
+import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase';
+import { collection, addDoc, onSnapshot, query, where, deleteDoc, doc, getDocs } from 'firebase/firestore';
 
 function HomePage() {
+  const { currentUser } = useAuth();
   const [articles, setArticles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('general');
-  // This state holds the value of the search input field as the user types
   const [searchInput, setSearchInput] = useState('');
-  // This state will only change when the user submits the search
   const [searchQuery, setSearchQuery] = useState('');
-  // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
-  const pageSize = 20; // Number of articles to fetch per page
+  const pageSize = 20;
+  const [favoriteArticleIds, setFavoriteArticleIds] = useState(new Set());
+
+  // Listen for user's favorite articles in real-time
+  useEffect(() => {
+    if (!currentUser) {
+      setFavoriteArticleIds(new Set());
+      return;
+    }
+
+    const q = query(collection(db, 'favorites'), where('userId', '==', currentUser.uid));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const ids = new Set(snapshot.docs.map(doc => doc.data().url));
+      setFavoriteArticleIds(ids);
+    }, (error) => {
+      console.error("Error listening to favorites: ", error);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser]);
 
   useEffect(() => {
     const getNews = async () => {
@@ -25,13 +46,10 @@ function HomePage() {
       try {
         let response;
         if (searchQuery.trim() !== '') {
-          // If there's a search query, search for it
           response = await searchNews(searchQuery, currentPage, pageSize);
         } else {
-          // Otherwise, fetch top headlines by category
           response = await fetchTopHeadlines('us', activeCategory, currentPage, pageSize);
         }
-        // Filter out any articles that are missing a title or source name
         const validArticles = response.articles.filter(article => article && article.title && article.source && article.source.name);
         setArticles(validArticles);
         setTotalResults(response.totalResults);
@@ -44,26 +62,53 @@ function HomePage() {
     };
 
     getNews();
-  }, [activeCategory, searchQuery, currentPage]); // Reruns when category, query, or page changes
+  }, [activeCategory, searchQuery, currentPage]);
 
-  // Function to handle a category button click
   const handleSelectCategory = (category) => {
     setActiveCategory(category);
-    setSearchQuery(''); // Clear the search query to show headlines
-    setSearchInput(''); // Also clear the text in the search bar
-    setCurrentPage(1); // Reset page to 1 when category changes
+    setSearchQuery('');
+    setSearchInput('');
+    setCurrentPage(1);
   };
 
-  // Function to handle the search submission
   const handleSearchSubmit = () => {
-    // Only update the searchQuery state when the user submits the search
     setSearchQuery(searchInput);
-    setCurrentPage(1); // Reset page to 1 on a new search
+    setCurrentPage(1);
   };
   
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top of page on change
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
+  const handleToggleFavorite = async (article) => {
+    if (!currentUser) {
+      alert("Please log in to save articles to your favorites.");
+      return;
+    }
+
+    const isFavorited = favoriteArticleIds.has(article.url);
+    if (isFavorited) {
+      // Find the document to delete
+      const q = query(collection(db, 'favorites'), where('userId', '==', currentUser.uid), where('url', '==', article.url));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (document) => {
+        await deleteDoc(doc(db, 'favorites', document.id));
+      });
+    } else {
+      // Add the article to favorites
+      try {
+        await addDoc(collection(db, 'favorites'), {
+          userId: currentUser.uid,
+          title: article.title,
+          url: article.url,
+          sourceName: article.source.name,
+          publishedAt: article.publishedAt,
+        });
+      } catch (err) {
+        console.error("Error adding article to favorites:", err);
+      }
+    }
   };
 
   const totalPages = Math.ceil(totalResults / pageSize);
@@ -76,7 +121,6 @@ function HomePage() {
     return <div className="text-center mt-8 text-xl text-red-500 font-bold">Error: {error}</div>;
   }
   
-  // Conditionally render the title based on the search query
   const title = searchQuery
     ? `Results for "${searchQuery}"`
     : `Top ${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} Headlines`;
@@ -84,8 +128,8 @@ function HomePage() {
   return (
     <div className="container mx-auto p-4">
       <SearchBar
-        query={searchInput} // Use searchInput for the input's value
-        onSearchChange={setSearchInput} // Update searchInput on every keystroke
+        query={searchInput}
+        onSearchChange={setSearchInput}
         onSearchSubmit={handleSearchSubmit}
       />
       <CategoryFilter
@@ -95,10 +139,20 @@ function HomePage() {
       <h1 className="text-3xl font-bold mb-6 text-center">{title}</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {articles.length > 0 ? (
-          articles.map((article, index) => (
-            <div key={index} className="bg-white p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+          articles.map((article) => (
+            <div key={article.url} className="bg-white p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 relative">
               <h2 className="text-xl font-semibold mb-2">{article.title}</h2>
-              <p className="text-sm text-gray-600">{article.source.name}</p>
+              <p className="text-sm text-gray-600 mb-4">{article.source.name}</p>
+              <button
+                onClick={() => handleToggleFavorite(article)}
+                className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${
+                  favoriteArticleIds.has(article.url) ? 'text-red-500' : 'text-gray-400 hover:text-red-400'
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 21.35l-1.84-1.84C5.46 15.35 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.46 6.85-8.16 11.01L12 21.35z"/>
+                </svg>
+              </button>
             </div>
           ))
         ) : (
@@ -106,7 +160,6 @@ function HomePage() {
         )}
       </div>
 
-      {/* Render pagination only if there are articles */}
       {articles.length > 0 && (
         <Pagination 
           currentPage={currentPage}
