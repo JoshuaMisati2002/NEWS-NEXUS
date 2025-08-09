@@ -10,14 +10,15 @@ const newsApi = axios.create({
 
 /**
  * Fetches top headlines from the News API.
- * @param {string} country The country to get headlines from 
+ * @param {string} country The country to get headlines from (e.g., 'us', 'gb').
  * @param {string} category The category to filter by (e.g., 'technology', 'sports').
- * @returns {Promise<object[]>} A promise that resolves to an array of article objects.
+ * @param {number} page The page number to retrieve.
+ * @param {number} pageSize The number of articles per page.
+ * @returns {Promise<object[]>} A promise that resolves to an object with articles and total results.
  */
-
 export const fetchTopHeadlines = async (country = 'us', category = '', page = 1, pageSize = 20) => {
   if (!API_KEY) {
-    console.error("VITE_NEWS_API_KEY is not set in the environment variables.");
+    console.error("VITE_NEWS_API_KEY is not set in the environment variables. Please check your .env file and ensure the variable is prefixed with VITE_");
     return { articles: [], totalResults: 0 };
   }
 
@@ -41,11 +42,13 @@ export const fetchTopHeadlines = async (country = 'us', category = '', page = 1,
 /**
  * Searches for news articles by keyword.
  * @param {string} query The search query string.
- * @returns {Promise<object[]>} A promise that resolves to an array of article objects.
+ * @param {number} page The page number to retrieve.
+ * @param {number} pageSize The number of articles per page.
+ * @returns {Promise<object[]>} A promise that resolves to an object with articles and total results.
  */
 export const searchNews = async (query, page = 1, pageSize = 20) => {
   if (!API_KEY) {
-    console.error("VITE_NEWS_API_KEY is not set in the environment variables.");
+    console.error("VITE_NEWS_API_KEY is not set in the environment variables. Please check your .env file and ensure the variable is prefixed with VITE_");
     return { articles: [], totalResults: 0 };
   }
 
@@ -70,3 +73,4 @@ export const searchNews = async (query, page = 1, pageSize = 20) => {
     return { articles: [], totalResults: 0 };
   }
 };
+
