@@ -2,29 +2,37 @@ import React, { useState, useEffect } from 'react';
 import { fetchTopHeadlines, searchNews } from '../services/newsApiService';
 import CategoryFilter from '../components/CategoryFilter';
 import SearchBar from '../components/SearchBar';
+import Pagination from '../components/Pagination';
 
 function HomePage() {
   const [articles, setArticles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('general');
-  // State for the search functionality
+  // This state holds the value of the search input field as the user types
+  const [searchInput, setSearchInput] = useState('');
+  // This state will only change when the user submits the search
   const [searchQuery, setSearchQuery] = useState('');
+  // State for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
+  const pageSize = 20; // Number of articles to fetch per page
 
   useEffect(() => {
     const getNews = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        let news;
+        let response;
         if (searchQuery.trim() !== '') {
           // If there's a search query, search for it
-          news = await searchNews(searchQuery);
+          response = await searchNews(searchQuery, currentPage, pageSize);
         } else {
           // Otherwise, fetch top headlines by category
-          news = await fetchTopHeadlines('us', activeCategory);
+          response = await fetchTopHeadlines('us', activeCategory, currentPage, pageSize);
         }
-        setArticles(news);
+        setArticles(response.articles);
+        setTotalResults(response.totalResults);
       } catch (err) {
         console.error("Failed to fetch news:", err);
         setError("Failed to fetch news. Please try again later.");
@@ -34,19 +42,29 @@ function HomePage() {
     };
 
     getNews();
-  }, [activeCategory, searchQuery]); // Reruns the effect whenever the category or search query changes
+  }, [activeCategory, searchQuery, currentPage]); // Reruns when category, query, or page changes
 
   // Function to handle a category button click
   const handleSelectCategory = (category) => {
     setActiveCategory(category);
-    setSearchQuery(''); // Clear the search query when a new category is selected
+    setSearchQuery(''); // Clear the search query to show headlines
+    setSearchInput(''); // Also clear the text in the search bar
+    setCurrentPage(1); // Reset page to 1 when category changes
   };
 
   // Function to handle the search submission
   const handleSearchSubmit = () => {
-    // The useEffect hook will automatically trigger the search when searchQuery changes
-    
+    // Only update the searchQuery state when the user submits the search
+    setSearchQuery(searchInput);
+    setCurrentPage(1); // Reset page to 1 on a new search
   };
+  
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top of page on change
+  };
+
+  const totalPages = Math.ceil(totalResults / pageSize);
 
   if (isLoading) {
     return <div className="text-center mt-8 text-xl text-gray-700">Loading news...</div>;
@@ -64,8 +82,8 @@ function HomePage() {
   return (
     <div className="container mx-auto p-4">
       <SearchBar
-        query={searchQuery}
-        onSearchChange={setSearchQuery}
+        query={searchInput} // Use searchInput for the input's value
+        onSearchChange={setSearchInput} // Update searchInput on every keystroke
         onSearchSubmit={handleSearchSubmit}
       />
       <CategoryFilter
@@ -85,6 +103,15 @@ function HomePage() {
           <div className="text-center text-gray-500 col-span-full">No articles found. Try a different search.</div>
         )}
       </div>
+
+      {/* Render pagination only if there are articles */}
+      {articles.length > 0 && (
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}
     </div>
   );
 }

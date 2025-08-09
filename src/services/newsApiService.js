@@ -14,10 +14,11 @@ const newsApi = axios.create({
  * @param {string} category The category to filter by (e.g., 'technology', 'sports').
  * @returns {Promise<object[]>} A promise that resolves to an array of article objects.
  */
-export const fetchTopHeadlines = async (country = 'ken', category = '') => {
+
+export const fetchTopHeadlines = async (country = 'us', category = '', page = 1, pageSize = 20) => {
   if (!API_KEY) {
     console.error("VITE_NEWS_API_KEY is not set in the environment variables.");
-    return [];
+    return { articles: [], totalResults: 0 };
   }
 
   try {
@@ -26,12 +27,14 @@ export const fetchTopHeadlines = async (country = 'ken', category = '') => {
         apiKey: API_KEY,
         country: country,
         category: category,
+        page: page,
+        pageSize: pageSize,
       },
     });
-    return response.data.articles;
+    return response.data;
   } catch (error) {
     console.error("Error fetching news:", error);
-    return [];
+    return { articles: [], totalResults: 0 };
   }
 };
 
@@ -40,15 +43,14 @@ export const fetchTopHeadlines = async (country = 'ken', category = '') => {
  * @param {string} query The search query string.
  * @returns {Promise<object[]>} A promise that resolves to an array of article objects.
  */
-export const searchNews = async (query) => {
+export const searchNews = async (query, page = 1, pageSize = 20) => {
   if (!API_KEY) {
     console.error("VITE_NEWS_API_KEY is not set in the environment variables.");
-    return [];
+    return { articles: [], totalResults: 0 };
   }
 
   if (!query) {
-    // If the query is empty, return an empty array to prevent unnecessary API calls
-    return [];
+    return { articles: [], totalResults: 0 };
   }
 
   try {
@@ -56,13 +58,15 @@ export const searchNews = async (query) => {
       params: {
         apiKey: API_KEY,
         q: query,
-        language: 'en', 
-        sortBy: 'relevancy', // Sort results by relevance to the query
+        language: 'en',
+        sortBy: 'relevancy',
+        page: page,
+        pageSize: pageSize,
       },
     });
-    return response.data.articles;
+    return response.data;
   } catch (error) {
     console.error("Error searching news:", error);
-    return [];
+    return { articles: [], totalResults: 0 };
   }
 };
