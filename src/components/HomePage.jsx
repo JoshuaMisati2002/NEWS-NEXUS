@@ -31,7 +31,9 @@ function HomePage() {
           // Otherwise, fetch top headlines by category
           response = await fetchTopHeadlines('us', activeCategory, currentPage, pageSize);
         }
-        setArticles(response.articles);
+        // Filter out any articles that are missing a title or source name
+        const validArticles = response.articles.filter(article => article && article.title && article.source && article.source.name);
+        setArticles(validArticles);
         setTotalResults(response.totalResults);
       } catch (err) {
         console.error("Failed to fetch news:", err);

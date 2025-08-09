@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-// Get the API key from your environment variables
+
 const API_KEY = import.meta.env.VITE_NEWS_API_KEY;
 
-// Create an Axios instance with a base URL
+
 const newsApi = axios.create({
   baseURL: 'https://newsapi.org/v2',
 });
