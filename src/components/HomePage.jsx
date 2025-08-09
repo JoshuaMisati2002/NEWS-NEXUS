@@ -45,7 +45,7 @@ function HomePage() {
   // Function to handle the search submission
   const handleSearchSubmit = () => {
     // The useEffect hook will automatically trigger the search when searchQuery changes
-    // No need to do anything here
+    
   };
 
   if (isLoading) {
