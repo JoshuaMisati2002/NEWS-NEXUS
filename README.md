@@ -1,12 +1,61 @@
-# React + Vite
+News Nexus
+A modern, responsive web application that aggregates top headlines from various sources and allows users to search, filter by category, and save their favorite articles. This project was built to demonstrate proficiency with React, Tailwind CSS, and Firebase.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Key Features
+Customizable News Feed: Fetches top headlines from a specific country   and allows users to filter by category.
 
-Currently, two official plugins are available:
+Article Search: Provides a search bar to find articles by keyword.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+User Authentication: Secure user signup and login using Firebase Authentication.
 
-## Expanding the ESLint configuration
+Favorites List: Users can save articles to a personal favorites list, which is stored in a Firestore NoSQL database.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Real-time Updates: The favorites list updates in real time as articles are added or removed.
+
+Modern UI: A clean, dark-themed user interface with subtle gradients, shadows, and hover effects, built with Tailwind CSS.
+
+Responsive Design: Optimized for a seamless experience on both desktop and mobile devices.
+
+Technology Stack
+Frontend: React.js
+
+Styling: Tailwind CSS
+
+State Management: React Hooks (useState, useEffect)
+
+Authentication & Database: Firebase Authentication and Cloud Firestore
+
+News API: An external API to fetch news data
+
+How to Run Locally
+Follow these steps to get a copy of the project up and running on your local machine.
+
+Prerequisites
+You will need the following software installed:
+
+Node.js (LTS version recommended)
+
+npm (comes with Node.js)
+
+Installation
+Clone the repository to your local machine: 
+
+Install the required dependencies:
+
+Configure API Key:
+Create a new file named .env in the root of the project.
+Add your News API key to this file:
+
+Running the App
+Start the development server and open the app in your browser 
+
+
+
+Usage
+Homepage: Browse top headlines and filter by categories like 'technology' or 'sports'.
+
+Search: Use the search bar to find articles on any topic.
+
+Authentication: Use the navigation bar to log in or create a new account to save articles.
+
+Favorites: Click the heart icon on any article to add it to your favorites list.

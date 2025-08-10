@@ -41,6 +41,10 @@ function HomePage({ showToast }) {
   }, [currentUser]);
 
   useEffect(() => {
+    //  clear the articles and totalResults to prevent old data from showing while new data loads
+    setArticles([]);
+    setTotalResults(0);
+    
     const getNews = async () => {
       setIsLoading(true);
       setError(null);
@@ -114,7 +118,7 @@ function HomePage({ showToast }) {
           url: article.url,
           sourceName: article.source.name,
           publishedAt: article.publishedAt,
-          urlToImage: article.urlToImage, // This is the new field we're adding
+          urlToImage: article.urlToImage, 
         });
         showToast("Article added to favorites!", 'success');
       } catch (err) {
@@ -149,13 +153,14 @@ function HomePage({ showToast }) {
         activeCategory={activeCategory}
         onSelectCategory={handleSelectCategory}
       />
-      <h1 className="text-3xl font-bold mb-6 text-center">{title}</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center text-white">{title}</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {articles.length > 0 ? (
           articles.map((article) => (
-            <Link key={article.url} to={`/article/${encodeURIComponent(article.url)}`} className="block">
+            //  hover effects
+            <Link key={article.url} to={`/article/${encodeURIComponent(article.url)}`} className="block transform transition-transform duration-300 hover:scale-[1.02]">
               <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 relative">
-                {/* Image element added here */}
+                
                 <img
                   src={article.urlToImage}
                   alt={article.title}
@@ -166,8 +171,8 @@ function HomePage({ showToast }) {
                     e.target.src = "https://placehold.co/600x400/CCCCCC/FFFFFF?text=Image+Not+Found";
                   }}
                 />
-                <h2 className="text-xl font-semibold mb-2">{article.title}</h2>
-                <p className="text-sm text-gray-600 mb-4">{article.source.name}</p>
+                <h2 className="text-xl font-semibold mb-2 text-gray-900">{article.title}</h2>
+                <p className="text-sm text-gray-500 mb-4">{article.source.name}</p>
                 <button
                   onClick={(e) => {
                     e.preventDefault(); // Prevents navigation when clicking the button

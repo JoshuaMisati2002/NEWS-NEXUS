@@ -41,9 +41,6 @@ function Profile() {
       setMessage('');
       setLoading(true);
       
-      // Re-authentication is often required for security-sensitive operations
-      // For simplicity, we are not implementing that here, but in a real app,
-      // you would prompt the user to re-enter their current password first.
       
       await updatePassword(currentUser, password);
       setMessage('Password updated successfully!');

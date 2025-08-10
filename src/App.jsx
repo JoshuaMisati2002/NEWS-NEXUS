@@ -22,7 +22,7 @@ function App() {
   };
 
   return (
-    <div className="bg-[url('/path/to/pattern.svg')]">
+    <div className="bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen flex flex-col font-inter text-gray-100">
       <Navbar />
       <main className="flex-grow">
         <Routes>

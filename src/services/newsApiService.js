@@ -11,7 +11,7 @@ const newsApi = axios.create({
 /**
  * Fetches top headlines from the News API.
  * @param {string} country The country to get headlines from 
- * @param {string} category The category to filter by (e.g., 'technology', 'sports').
+ * @param {string} category The category to filter
  * @param {number} page The page number to retrieve.
  * @param {number} pageSize The number of articles per page.
  * @returns {Promise<object[]>} A promise that resolves to an object with articles and total results.
