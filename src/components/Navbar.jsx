@@ -4,12 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 
-function Navbar() {
+function Navbar({ showToast }) {
   const { currentUser } = useAuth();
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      showToast('Logged out successfully!', 'success');
       console.log("User logged out successfully.");
     } catch (error) {
       console.error("Error logging out:", error);
@@ -20,13 +21,14 @@ function Navbar() {
     <nav className="bg-gray-800 p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="text-white text-2xl font-bold">
-          News Aggregator
+          News Nexus
         </Link>
         <div className="flex space-x-4">
           {currentUser ? (
             // If the user is logged in, show a link to a future favorites page and a logout button
             <>
               <Link to="/favorites" className="text-white hover:text-gray-300">Favorites</Link>
+              <Link to="/profile" className="text-white hover:text-gray-300">Profile</Link>
               <button onClick={handleLogout} className="text-white hover:text-gray-300">Logout</button>
             </>
           ) : (
