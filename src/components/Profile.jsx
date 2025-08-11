@@ -1,18 +1,23 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext.jsx';
 import { Link } from 'react-router-dom';
 import { updatePassword } from 'firebase/auth';
 import { auth } from '../firebase';
+import { FaEye, FaEyeSlash } from "react-icons/fa"; 
 
 function Profile() {
   const { currentUser } = useAuth();
+  
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // If the user is not logged in, display a message and a link to login
+  // Toggle states
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   if (!currentUser) {
     return (
       <div className="text-center mt-8 text-xl text-gray-700 p-6">
@@ -24,7 +29,6 @@ function Profile() {
     );
   }
 
-  // Function to handle password update
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
 
@@ -40,16 +44,13 @@ function Profile() {
       setError('');
       setMessage('');
       setLoading(true);
-      
-      
       await updatePassword(currentUser, password);
       setMessage('Password updated successfully!');
       setPassword('');
       setConfirmPassword('');
     } catch (err) {
-      // Handle different Firebase errors
       if (err.code === 'auth/requires-recent-login') {
-        setError('Please log out and log back in to update your password.');
+        setError('This operation requires recent authentication. Please log out and log back in.');
       } else {
         setError('Failed to update password. Please try again.');
         console.error("Error updating password:", err);
@@ -76,28 +77,50 @@ function Profile() {
         {message && <div className="p-3 mb-4 text-sm text-green-700 bg-green-100 rounded-lg">{message}</div>}
 
         <form onSubmit={handlePasswordUpdate}>
+          {/* Password field */}
           <div className="mb-4">
             <label className="block text-gray-700 font-medium mb-2">New Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
           </div>
+
+          {/* Confirm Password field */}
           <div className="mb-6">
             <label className="block text-gray-700 font-medium mb-2">Confirm New Password</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
+              >
+                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
           </div>
+
           <button
             type="submit"
             disabled={loading}
